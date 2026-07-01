@@ -1,34 +1,62 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DashboardLayout } from './components/layout/DashboardLayout';
-import { ProductsPage } from './features/products/pages/ProductsPage';
 import { CustomersPage } from './features/customers/pages/CustomersPage';
-import { CreateOrderForm } from './features/orders/components/CreateOrderForm';
+import { DashboardPage } from './features/dashboard/pages/DashboardPage';
+import { ProductsPage } from './features/products/pages/ProductsPage';
+import { OrdersPage } from './features/orders/pages/OrdersPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
+import { LoginPage } from './features/auth/pages/LoginPage';
+import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
+  }
+});
 
-// Placeholders for other pages
-const OrdersPage = () => <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100"><h1 className="text-3xl font-bold mb-4 text-gray-900">Zamówienia</h1><CreateOrderForm /></div>;
-const IntegrationsPage = () => <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100"><h1 className="text-3xl font-bold mb-4 text-gray-900">Integracje</h1><p className="text-gray-600 text-lg">Podłącz Allegro, InPost, Baselinker, itp.</p></div>;
-const DocumentsPage = () => <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100"><h1 className="text-3xl font-bold mb-4 text-gray-900">Dokumenty</h1><p className="text-gray-600 text-lg">Faktury, paragony, listy przewozowe.</p></div>;
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#f4f7f6]">Ładowanie...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<DashboardLayout />}>
-            <Route index element={<Navigate to="/customers" replace />} />
-            <Route path="customers" element={<CustomersPage />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="orders" element={<OrdersPage />} />
-            <Route path="integrations" element={<IntegrationsPage />} />
-            <Route path="documents" element={<DocumentsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Protected Routes */}
+            <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route index element={<DashboardPage />} />
+              <Route path="customers" element={<CustomersPage />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
