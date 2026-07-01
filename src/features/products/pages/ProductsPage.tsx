@@ -1,21 +1,21 @@
 import { useState } from 'react';
-import { Search, Plus, Package, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Search, Plus, Package, Edit, Trash2, Image as ImageIcon, Layers } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../lib/api';
 import { ProductFormModal } from '../components/ProductFormModal';
 
-// Mock Data for MVP
-const mockProducts = Array.from({ length: 18 }).map((_, i) => ({
-  id: i + 1,
-  name: `Produkt Testowy ${i + 1}`,
-  sku: `PROD-${String(i + 1).padStart(4, '0')}`,
-  price: (Math.random() * 500 + 50).toFixed(2),
-  stockQuantity: Math.floor(Math.random() * 100),
-  category: i % 2 === 0 ? 'Elektronika' : 'Akcesoria',
-  images: [{ url: `https://picsum.photos/seed/${i}/400/400`, isDefault: true }]
-}));
-
 export const ProductsPage = () => {
+  const [activeTab, setActiveTab] = useState<'products' | 'sets'>('products');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const response = await api.get('/api/products');
+      return response.data;
+    }
+  });
 
   const handleEdit = (product: any) => {
     setEditingProduct(product);
@@ -50,87 +50,98 @@ export const ProductsPage = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-blue-500/30 flex items-center gap-2 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
-            <span>Dodaj Produkt</span>
+            <span>{activeTab === 'products' ? 'Dodaj Produkt' : 'Utwórz Zestaw'}</span>
           </button>
         </div>
       </div>
 
-      {/* Grid List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {mockProducts.map((product) => (
-          <div key={product.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all group overflow-hidden flex flex-col">
-            {/* Image Placeholder */}
-            <div className="relative h-48 bg-gray-50 flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
-               {product.images?.[0] ? (
-                  <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
-               ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="w-12 h-12 text-gray-300" />
-                  </div>
-               )}
-               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => handleEdit(product)} className="p-2 bg-white/90 hover:bg-white text-gray-700 rounded-lg shadow-sm backdrop-blur-sm transition-all"><Edit className="w-4 h-4" /></button>
-                  <button className="p-2 bg-white/90 hover:bg-white text-red-600 rounded-lg shadow-sm backdrop-blur-sm transition-all"><Trash2 className="w-4 h-4" /></button>
-               </div>
-               {product.stockQuantity < 10 && (
-                 <span className="absolute bottom-2 left-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md">
-                   Niski stan ({product.stockQuantity})
-                 </span>
-               )}
-            </div>
-            
-            {/* Content */}
-            <div className="p-5 flex-1 flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
-                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{product.sku}</span>
-                 <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                 <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{product.category}</span>
-              </div>
-              
-              <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 flex-1">{product.name}</h3>
-              
-              <div className="flex items-end justify-between mt-4 pt-4 border-t border-gray-50">
-                 <div>
-                   <p className="text-sm text-gray-500 mb-1">Cena brutto</p>
-                   <p className="font-bold text-gray-900 text-xl">{product.price} PLN</p>
-                 </div>
-                 <div className="flex items-center text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
-                    <Package className="w-4 h-4 mr-2 text-gray-400" />
-                    {product.stockQuantity} szt.
-                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Tabs */}
+      <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+        <button
+          onClick={() => setActiveTab('products')}
+          className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+            activeTab === 'products' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          Produkty
+        </button>
+        <button
+          onClick={() => setActiveTab('sets')}
+          className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+            activeTab === 'sets' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          Zestawy Produktowe
+        </button>
       </div>
 
-      {/* Pagination (reusable component later) */}
-      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-2xl shadow-sm">
-        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700">
-              Pokazuję <span className="font-medium">1</span> do <span className="font-medium">18</span> z <span className="font-medium">97</span> wyników
-            </p>
-          </div>
-          <div>
-            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-              <button className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                <span className="sr-only">Previous</span>
-                &larr;
-              </button>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">1</button>
-              <button className="relative inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">2</button>
-              <button className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex">3</button>
-              <button className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                <span className="sr-only">Next</span>
-                &rarr;
-              </button>
-            </nav>
-          </div>
+      {isLoading ? (
+         <div className="py-12 flex justify-center"><p className="text-gray-500">Ładowanie...</p></div>
+      ) : products.length === 0 ? (
+         <div className="py-20 text-center bg-white border border-gray-100 rounded-3xl shadow-sm">
+           <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+           <h3 className="text-xl font-bold text-gray-900 mb-2">Brak wpisów</h3>
+           <p className="text-gray-500 mb-6">Rozpocznij dodawanie asortymentu do swojego sklepu.</p>
+           <button 
+              onClick={handleAddNew}
+              className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium transition-all"
+           >
+             Dodaj pierwszy produkt
+           </button>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products.map((product: any) => (
+            <div key={product.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all group overflow-hidden flex flex-col">
+              {/* Image Placeholder */}
+              <div className="relative h-48 bg-gray-50 flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
+                 {product.images?.length > 0 ? (
+                    <img src={product.images.find((i:any) => i.isDefault)?.url || product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
+                 ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="w-12 h-12 text-gray-300" />
+                    </div>
+                 )}
+                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => handleEdit(product)} className="p-2 bg-white/90 hover:bg-white text-gray-700 rounded-lg shadow-sm backdrop-blur-sm transition-all"><Edit className="w-4 h-4" /></button>
+                    <button className="p-2 bg-white/90 hover:bg-white text-red-600 rounded-lg shadow-sm backdrop-blur-sm transition-all"><Trash2 className="w-4 h-4" /></button>
+                 </div>
+                 {product.stockQuantity < 10 && (
+                   <span className="absolute bottom-2 left-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md">
+                     Niski stan ({product.stockQuantity})
+                   </span>
+                 )}
+              </div>
+              
+              {/* Content */}
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                   <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{product.sku}</span>
+                   {product.sku && <span className="w-1 h-1 rounded-full bg-gray-300"></span>}
+                   <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{activeTab === 'sets' ? 'Zestaw' : 'Produkt'}</span>
+                </div>
+                
+                <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 flex-1">{product.name}</h3>
+                
+                <div className="flex items-end justify-between mt-4 pt-4 border-t border-gray-50">
+                   <div>
+                     <p className="text-sm text-gray-500 mb-1">Cena brutto</p>
+                     <p className="font-bold text-gray-900 text-xl">{product.price} PLN</p>
+                   </div>
+                   <div className="flex items-center text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+                      <Package className="w-4 h-4 mr-2 text-gray-400" />
+                      {product.stockQuantity} szt.
+                   </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {isModalOpen && (
+      {isModalOpen && activeTab === 'products' && (
         <ProductFormModal 
           product={editingProduct} 
           onClose={() => setIsModalOpen(false)} 

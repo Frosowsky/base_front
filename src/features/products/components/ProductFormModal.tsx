@@ -157,6 +157,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ product, onC
                   <label className="text-sm font-medium text-gray-700">Cena brutto (PLN)</label>
                   <input type="number" step="0.01" defaultValue={product?.price} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required />
                 </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-700">Stan Magazynowy (Ilość)</label>
+                  <input type="number" defaultValue={product?.stockQuantity} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required />
+                </div>
                 <div className="space-y-1 sm:col-span-2">
                   <label className="text-sm font-medium text-gray-700">Opis</label>
                   <textarea rows={3} defaultValue={product?.description} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />

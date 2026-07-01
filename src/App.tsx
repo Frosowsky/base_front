@@ -6,6 +6,7 @@ import { CustomersPage } from './features/customers/pages/CustomersPage';
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { ProductsPage } from './features/products/pages/ProductsPage';
 import { OrdersPage } from './features/orders/pages/OrdersPage';
+import { OrderDetailsPage } from './features/orders/pages/OrderDetailsPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
@@ -55,6 +56,7 @@ function App() {
               <Route path="customers" element={<CustomersPage />} />
               <Route path="products" element={<ProductsPage />} />
               <Route path="orders" element={<OrdersPage />} />
+              <Route path="orders/:id" element={<OrderDetailsPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

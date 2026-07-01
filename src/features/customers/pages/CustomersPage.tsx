@@ -1,18 +1,38 @@
-import { Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
-
-// Mock Data for MVP
-const mockCustomers = Array.from({ length: 24 }).map((_, i) => ({
-  id: i + 1,
-  name: `Firma XYZ ${i + 1}`,
-  contactPerson: `Jan Kowalski ${i + 1}`,
-  email: `kontakt${i + 1}@firma.pl`,
-  phone: `+48 123 456 ${String(i).padStart(3, '0')}`,
-  address: `ul. Prosta ${i + 1}, 00-001 Warszawa`,
-  status: i % 3 === 0 ? 'Nowy' : 'Aktywny',
-  avatarColor: ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-purple-100 text-purple-700'][i % 3]
-}));
+import { useState } from 'react';
+import { Mail, Phone, MapPin, Edit2, Trash2, Building2, User } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../lib/api';
+import { CustomerFormModal } from '../components/CustomerFormModal';
 
 export const CustomersPage = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<any>(null);
+
+  const { data: customers = [], isLoading } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const response = await api.get('/api/customers');
+      return response.data;
+    }
+  });
+
+  const getSourceLabel = (source: number) => {
+    switch(source) {
+      case 0: return 'Manualnie';
+      case 1: return 'Formularz';
+      case 2: return 'Allegro';
+      case 3: return 'OLX';
+      case 4: return 'Shopify';
+      case 5: return 'WooCommerce';
+      default: return 'Inne';
+    }
+  };
+
+  const getAvatarColor = (id: string, type: number) => {
+    if (type === 1) return 'bg-emerald-100 text-emerald-700';
+    return 'bg-blue-100 text-blue-700';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -20,82 +40,94 @@ export const CustomersPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Klienci</h1>
           <p className="text-gray-500 mt-1">Zarządzaj bazą swoich klientów (B2B / B2C).</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-blue-500/30 hover:shadow-md hover:shadow-blue-500/40">
+        <button 
+          onClick={() => { setEditingCustomer(null); setIsModalOpen(true); }}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-blue-500/30 hover:shadow-md hover:shadow-blue-500/40"
+        >
           + Dodaj Klienta
         </button>
       </div>
 
-      {/* Grid Layout 20-50 items as requested */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {mockCustomers.map((customer) => (
-          <div key={customer.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-               <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-               <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-            </div>
-            
-            <div className="flex items-start gap-4 mb-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${customer.avatarColor}`}>
-                {customer.name.substring(0, 2).toUpperCase()}
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 text-lg leading-tight">{customer.name}</h3>
-                <p className="text-sm text-gray-500">{customer.contactPerson}</p>
-              </div>
-            </div>
-
-            <div className="space-y-3 mt-6">
-              <div className="flex items-center text-sm text-gray-600">
-                <Mail className="w-4 h-4 mr-3 text-gray-400" />
-                {customer.email}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Phone className="w-4 h-4 mr-3 text-gray-400" />
-                {customer.phone}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="w-4 h-4 mr-3 text-gray-400" />
-                <span className="truncate">{customer.address}</span>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-               <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
-                 customer.status === 'Nowy' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-               }`}>
-                 {customer.status}
-               </span>
-               <button className="text-sm font-medium text-blue-600 hover:text-blue-700">Szczegóły &rarr;</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination Mock */}
-      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-2xl shadow-sm">
-        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700">
-              Pokazuję <span className="font-medium">1</span> do <span className="font-medium">24</span> z <span className="font-medium">97</span> wyników
-            </p>
-          </div>
-          <div>
-            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-              <button className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                <span className="sr-only">Previous</span>
-                &larr;
-              </button>
-              <button className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">1</button>
-              <button className="relative inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">2</button>
-              <button className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex">3</button>
-              <button className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                <span className="sr-only">Next</span>
-                &rarr;
-              </button>
-            </nav>
-          </div>
+      {isLoading ? (
+        <div className="py-12 flex justify-center"><p className="text-gray-500">Ładowanie klientów...</p></div>
+      ) : customers.length === 0 ? (
+        <div className="py-20 text-center bg-white border border-gray-100 rounded-3xl shadow-sm">
+           <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+           <h3 className="text-xl font-bold text-gray-900 mb-2">Brak klientów</h3>
+           <p className="text-gray-500 mb-6">Rozpocznij budowanie bazy kontaktów dodając pierwszego klienta.</p>
+           <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium transition-all"
+           >
+             Dodaj pierwszego klienta
+           </button>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {customers.map((customer: any) => (
+            <div key={customer.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                 <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
+                 <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+              </div>
+              
+              <div className="flex items-start gap-4 mb-4 pr-16">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 ${getAvatarColor(customer.id, customer.type)}`}>
+                  {customer.type === 1 ? <Building2 className="w-6 h-6" /> : <User className="w-6 h-6" />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">
+                    {customer.type === 1 ? customer.companyName : `${customer.firstName} ${customer.lastName}`}
+                  </h3>
+                  {customer.type === 1 && (
+                    <p className="text-sm text-gray-500 font-mono mt-0.5">NIP: {customer.taxId}</p>
+                  )}
+                  {customer.type === 0 && customer.companyName && (
+                    <p className="text-sm text-gray-500 mt-0.5">{customer.companyName}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3 mt-6">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Mail className="w-4 h-4 mr-3 text-gray-400 shrink-0" />
+                  <span className="truncate">{customer.email || 'Brak email'}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Phone className="w-4 h-4 mr-3 text-gray-400 shrink-0" />
+                  {customer.phone || 'Brak telefonu'}
+                </div>
+                {customer.country && (
+                   <div className="flex items-center text-sm text-gray-600">
+                     <MapPin className="w-4 h-4 mr-3 text-gray-400 shrink-0" />
+                     <span className="truncate">{customer.country}</span>
+                   </div>
+                )}
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
+                 <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
+                   customer.source > 0 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+                 }`}>
+                   Źródło: {getSourceLabel(customer.source)}
+                 </span>
+                 <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
+                   customer.type === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
+                 }`}>
+                   {customer.type === 1 ? 'B2B' : 'B2C'}
+                 </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isModalOpen && (
+        <CustomerFormModal 
+          customer={editingCustomer}
+          onClose={() => { setIsModalOpen(false); setEditingCustomer(null); }} 
+        />
+      )}
     </div>
   );
 };
