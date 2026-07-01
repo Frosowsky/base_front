@@ -73,7 +73,7 @@ export const LoginPage = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-semibold text-gray-700">Hasło</label>
-                <a href="#" className="text-xs font-semibold text-emerald-600 hover:text-emerald-500">Zapomniałeś hasła?</a>
+                <Link to="/forgot-password" className="text-xs font-semibold text-emerald-600 hover:text-emerald-500">Zapomniałeś hasła?</Link>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
