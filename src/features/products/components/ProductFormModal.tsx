@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, Upload, Check, Trash2, ImageIcon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Upload, Check, Trash2 } from 'lucide-react';
 
 interface ProductFormModalProps {
   product?: any;

@@ -88,7 +88,7 @@ export const OrderStatusesSettings = () => {
       </div>
 
       <div className="space-y-3">
-        {statuses.sort((a, b) => a.orderIndex - b.orderIndex).map((status) => (
+        {statuses.sort((a: any, b: any) => a.orderIndex - b.orderIndex).map((status: any) => (
           <div key={status.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition-shadow group">
             <div className="flex items-center gap-4">
                <button className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing">

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Mail, Phone, MapPin, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { Search, Filter, Plus, Mail, Phone, MapPin, Building2, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 
 // Mock Data for MVP
 const mockCustomers = Array.from({ length: 24 }).map((_, i) => ({

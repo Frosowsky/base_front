@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Settings, Sliders, Palette, ShieldCheck, Mail, Database } from 'lucide-react';
 import { OrderStatusesSettings } from '../components/OrderStatusesSettings';
 import { IntegrationsSettings } from '../components/IntegrationsSettings';

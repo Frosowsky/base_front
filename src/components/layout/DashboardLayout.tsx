@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Users, ShoppingCart, Link, FileText, Settings, Menu, Package, LogOut, Activity } from 'lucide-react';
+import { Users, ShoppingCart, Settings, Menu, Package, LogOut, Activity } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const DashboardLayout = () => {
