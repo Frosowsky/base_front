@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, Plus, Package, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
 import { ProductFormModal } from '../components/ProductFormModal';
 
