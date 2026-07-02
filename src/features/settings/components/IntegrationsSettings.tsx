@@ -1,6 +1,8 @@
 import React from 'react';
-import { Package, Truck, FileText, ShoppingBag, Database, Power, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Package, Truck, FileText, ShoppingBag, Database, Power, CheckCircle2, ChevronRight, Settings } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { InPostSettingsModal } from './InPostSettingsModal';
+
 
 const CATEGORIES = [
   { id: 'faktury', name: 'Faktury i Księgowość' },
@@ -20,6 +22,7 @@ const ICONS_MAP: Record<string, React.ElementType> = {
 
 export const IntegrationsSettings = () => {
   const queryClient = useQueryClient();
+  const [selectedInPostId, setSelectedInPostId] = React.useState<string | null>(null);
 
   const { data: integrations = [], isLoading } = useQuery({
     queryKey: ['integrations'],
@@ -105,9 +108,12 @@ export const IntegrationsSettings = () => {
                           {integration.isActive ? 'Wyłącz integrację' : 'Włącz integrację'}
                         </button>
                         
-                        {integration.isActive && (
-                           <button className="text-gray-400 hover:text-blue-600 text-xs font-medium flex items-center gap-1 transition-colors">
-                             Konfiguruj <ChevronRight className="w-3.5 h-3.5" />
+                        {integration.systemId === 'inpost' && (
+                           <button 
+                             onClick={() => setSelectedInPostId(integration.id)}
+                             className="text-gray-400 hover:text-blue-600 text-xs font-medium flex items-center gap-1 transition-colors"
+                           >
+                             <Settings className="w-3.5 h-3.5" /> Konfiguruj
                            </button>
                         )}
                       </div>
@@ -119,6 +125,12 @@ export const IntegrationsSettings = () => {
           );
         })}
       </div>
+
+      <InPostSettingsModal 
+        isOpen={!!selectedInPostId} 
+        onClose={() => setSelectedInPostId(null)} 
+        integrationId={selectedInPostId || ''} 
+      />
     </div>
   );
 };
